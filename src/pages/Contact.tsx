@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Briefcase, Mail, Linkedin, Github, ExternalLink, Send, User, DollarSign } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 const Contact: React.FC = () => {
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [jobFormData, setJobFormData] = useState({
     name: '',
     email: '',
@@ -48,18 +51,48 @@ const Contact: React.FC = () => {
 
   const handleJobFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend or email service
-    const subject = `Job Opportunity: ${jobFormData.jobTitle}`;
-    const body = `Name: ${jobFormData.name}\nEmail: ${jobFormData.email}\n\nJob Title: ${jobFormData.jobTitle}\n\nDescription: ${jobFormData.description}\n\nBudget/Offer: ${jobFormData.budget}`;
-    
-    window.location.href = `mailto:fashjohn04@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    
-    setIsJobModalOpen(false);
-    setJobFormData({ name: '', email: '', jobTitle: '', description: '', budget: '' });
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    // EmailJS configuration
+    const serviceId = 'YOUR_SERVICE_ID'; // You'll need to replace this
+    const templateId = 'YOUR_TEMPLATE_ID'; // You'll need to replace this
+    const publicKey = 'YOUR_PUBLIC_KEY'; // You'll need to replace this
+
+    const templateParams = {
+      from_name: jobFormData.name,
+      from_email: jobFormData.email,
+      job_title: jobFormData.jobTitle,
+      job_description: jobFormData.description,
+      budget: jobFormData.budget,
+      to_email: 'fashjohn04@gmail.com',
+      subject: `New Job Opportunity: ${jobFormData.jobTitle}`,
+    };
+
+    emailjs.send(serviceId, templateId, templateParams, publicKey)
+      .then((response) => {
+        console.log('Email sent successfully:', response);
+        setSubmitStatus('success');
+        setJobFormData({ name: '', email: '', jobTitle: '', description: '', budget: '' });
+        
+        // Close modal after 2 seconds
+        setTimeout(() => {
+          setIsJobModalOpen(false);
+          setSubmitStatus('idle');
+        }, 2000);
+      })
+      .catch((error) => {
+        console.error('Email sending failed:', error);
+        setSubmitStatus('error');
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
   };
 
   const closeModal = () => {
     setIsJobModalOpen(false);
+    setSubmitStatus('idle');
   };
 
   return (
@@ -289,19 +322,69 @@ const Contact: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-900 transition-colors flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 ${
+                    isSubmitting 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : submitStatus === 'success'
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : submitStatus === 'error'
+                      ? 'bg-red-600 hover:bg-red-700'
+                      : 'bg-blue-800 hover:bg-blue-900'
+                  } text-white`}
                 >
-                  <Send size={16} />
-                  Send Job Details
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      Sending...
+                    </>
+                  ) : submitStatus === 'success' ? (
+                    <>
+                      <Send size={16} />
+                      Sent Successfully!
+                    </>
+                  ) : submitStatus === 'error' ? (
+                    <>
+                      <Send size={16} />
+                      Failed - Try Again
+                    </>
+                  ) : (
+                    <>
+                      <Send size={16} />
+                      Send Job Details
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="flex-1 border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                  disabled={isSubmitting}
+                  className={`flex-1 border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-colors ${
+                    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
+                  }`}
                 >
                   Cancel
                 </button>
               </div>
+
+              {submitStatus === 'error' && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-red-700 text-sm">
+                    Failed to send email. Please try again or contact me directly at{' '}
+                    <a href="mailto:fashjohn04@gmail.com" className="underline">
+                      fashjohn04@gmail.com
+                    </a>
+                  </p>
+                </div>
+              )}
+
+              {submitStatus === 'success' && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <p className="text-green-700 text-sm">
+                    Your job details have been sent successfully! I'll get back to you within 24 hours.
+                  </p>
+                </div>
+              )}
             </form>
           </motion.div>
         </div>
