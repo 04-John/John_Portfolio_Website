@@ -55,9 +55,9 @@ const Contact: React.FC = () => {
     setSubmitStatus('idle');
 
     // EmailJS configuration
-    const serviceId = 'YOUR_SERVICE_ID'; // You'll need to replace this
-    const templateId = 'YOUR_TEMPLATE_ID'; // You'll need to replace this
-    const publicKey = 'YOUR_PUBLIC_KEY'; // You'll need to replace this
+    const serviceId = 'service_1tj571f';
+    const templateId = 'template_xq48k3j';
+    const publicKey = 'dKqFnqA2_Bcm5EeR4';
 
     const templateParams = {
       from_name: jobFormData.name,

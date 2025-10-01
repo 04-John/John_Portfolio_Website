@@ -2,9 +2,9 @@ import emailjs from '@emailjs/browser';
 
 // EmailJS configuration
 const EMAILJS_CONFIG = {
-  serviceId: 'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
-  templateId: 'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
-  publicKey: 'YOUR_PUBLIC_KEY', // Replace with your EmailJS public key
+  serviceId: 'service_1tj571f',
+  templateId: 'template_xq48k3j',
+  publicKey: 'dKqFnqA2_Bcm5EeR4',
 };
 
 export interface JobFormData {
